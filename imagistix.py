@@ -235,6 +235,18 @@ def parse_iq(info: ImgInfo, frame: int) \
             f.seek(INT_SIZE, 1)
     
     return i_data, q_data
+
+def load_metadata(metadata_path: Path) -> Tuple[int, float, bool, str, str, str]:
+    try:
+        metadata = loadmat(metadata_path)['metadata']
+        age, psa, family_history = int(metadata['Age'][0]), float(metadata['PSA'][0]), (metadata['FamilyHistory'][0] == 'True')
+        primary_grade, secondary_grade, pct_cancer = metadata['PrimaryGrade'][0], metadata['SecondaryGrade'][0], metadata['PctCancer'][0]
+    except NotImplementedError:
+        metadata = mat73.loadmat(metadata_path)['metadata']
+        age, psa, family_history = int(metadata['Age']), float(metadata['PSA']), (metadata['FamilyHistory'] == 'True')
+        primary_grade, secondary_grade, pct_cancer = metadata['PrimaryGrade'], metadata['SecondaryGrade'], metadata['PctCancer']
+    
+    return age, psa, family_history, primary_grade, secondary_grade, pct_cancer
     
 def load_iq_img(file_path: Path) -> Tuple[np.ndarray, np.ndarray]:
     try:

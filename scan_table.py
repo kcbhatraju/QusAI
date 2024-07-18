@@ -7,7 +7,7 @@ from scipy.io import loadmat
 from scipy.optimize import curve_fit
 from skimage.measure import find_contours
 
-from imagistix import ImgInfo, read_exact_info, parse_iq, load_iq_img
+from imagistix import ImgInfo, read_exact_info, parse_iq, load_iq_img, load_metadata
 from signal_transforms import TGCFit, SpectralAnalysis, convert_iq_rf, max_hilbert, remove_tgc_gain, compute_roi_windows, \
     window_spectral_analysis
 
@@ -30,8 +30,8 @@ class ParsedScan():
         self.midband_fit = [analysis.midband_fit for analysis in spectral_analyses]
         self.spectral_slope = [analysis.spectral_slope for analysis in spectral_analyses]
         self.spectral_intercept = [analysis.spectral_intercept for analysis in spectral_analyses]
-        self.img_path = [analysis.img_path for analysis in spectral_analyses]
-        self.ref_path = [analysis.ref_path for analysis in spectral_analyses]
+        self.img_path = spectral_analyses[0].img_path
+        self.ref_path = spectral_analyses[0].ref_path
         self.location = [analysis.location for analysis in spectral_analyses]
 
         self.gain: float = None
@@ -41,12 +41,14 @@ class ParsedScan():
         self.depth: int = None
         self.label: str = None
         self.psa: float = None
-        self.pct_cancer: float = None
+        self.pct_cancer: str = None
         self.name: str = None
         self.hospital: str = None
         self.core: str = None
-        self.prim_grade: Any = None
-        self.sec_grade: Any = None
+        self.age: int = None
+        self.prim_grade: str = None
+        self.sec_grade: str = None
+        self.family_history: bool = None
 
 class ImgData:
     def __init__(self):
@@ -240,6 +242,8 @@ def get_window_ps(img_info: ImgInfo, img_info_ref: ImgInfo, i_data: np.ndarray, 
             window_outputs.location.bottom_depth_mm = window.bottom_pix * img_info.axial_res_rf
             window_outputs.location.top_depth_mm = window.top_pix * img_info.axial_res_rf
             window_outputs.location.width_mm = abs(window.right_pix - window.left_pix) * img_info.lateral_res_rf
+            window_outputs.img_path = img_info.file_path
+            window_outputs.ref_path = img_info_ref.file_path
 
             analyzed_windows.append(window_outputs)
         
@@ -257,16 +261,22 @@ def get_window_ps(img_info: ImgInfo, img_info_ref: ImgInfo, i_data: np.ndarray, 
         scans_table[focal_zone] = parsed_scan
 
     return scans_table
-            
+
+def read_metadata(parsed_scans: List[ParsedScan]) -> List[ParsedScan]:
+    for scan in parsed_scans:
+        metadata_path = scan.img_path.parents[2] / Path("Metadata") / Path(scan.label) / Path(f"{scan.name}_{scan.core}_{scan.label}.mat")
+        scan.age, scan.psa, scan.family_history, scan.prim_grade, scan.sec_grade, scan.pct_cancer = load_metadata(metadata_path)
+    return parsed_scans
 
 def exact_sort(all_files: list, analysis_params: AnalysisParams, phantoms: List[PhantomMetaInfo], frame: int) -> List[List[ParsedScan]]:
     # table - (file x focal zone)
-    exact_table = [None] * (len(all_files)-1) # -1 for phantomInfo.mat 
+    exact_table = []
     for i, file_path in enumerate(all_files):
-        if file_path.name == "phantomInfo.mat":
+        if file_path.name == "phantomInfo.mat" or file_path.parents[1].name == 'Metadata':
             continue
         img_info, img_info_ref, i_data, q_data, i_data_ref, q_data_ref = get_data(file_path, phantoms, frame)
-        exact_table[i] = get_window_ps(img_info, img_info_ref, i_data, q_data, i_data_ref, q_data_ref, analysis_params)
+        exact_table.append(get_window_ps(img_info, img_info_ref, i_data, q_data, i_data_ref, q_data_ref, analysis_params))
+        exact_table[-1] = read_metadata(exact_table[-1])
     return exact_table
 
 def gen_scan_table(data_path: Path, frame: int) -> List[List[ParsedScan]]:
