@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+from tensorflow.keras.callbacks import Callback
 from IPython.display import clear_output
+from sklearn.metrics import roc_auc_score
 
 class PlotLosses(Callback):
     def on_train_begin(self, logs={}):
@@ -9,10 +11,9 @@ class PlotLosses(Callback):
         self.val_losses = []
         self.acc = []
         self.val_acc = []
+        self.logs = []
         
         self.fig = plt.figure()
-        
-        self.logs = []
 
     def on_epoch_end(self, logs={}):
         
@@ -35,11 +36,11 @@ class PlotLosses(Callback):
         plt.show()
 
 class RocCallback(Callback):
-    def __init__(self,training_data,validation_data):
+    def __init__(self, training_data, validation_data):
         self.x = training_data[0]
         self.y = training_data[1]
-        self.x_val = validation_data[0]
-        self.y_val = validation_data[1]
+        self.x_valid = validation_data[0]
+        self.y_valid = validation_data[1]
 
     def on_train_begin(self, logs={}):
         return
