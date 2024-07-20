@@ -197,7 +197,7 @@ def get_image_info(root: ET.Element) -> ImgInfo:
     else:
         info.q_2x_frequency = info.rx_frequency
     # info.sampling_frequency = info.q_2x_frequency*INT_FAC
-    info.sampling_frequency = info.q_2x_frequency
+    info.sampling_frequency = info.q_2x_frequency*INT_FAC
     info.tgc = [info.tgc1, info.tgc2, info.tgc3, info.tgc4, info.tgc5, info.tgc6, info.tgc7, info.tgc8]
     return info
 
@@ -239,12 +239,18 @@ def parse_iq(info: ImgInfo, frame: int) \
 def load_metadata(metadata_path: Path) -> Tuple[int, float, bool, str, str, str]:
     try:
         metadata = loadmat(metadata_path)['metadata']
-        age, psa, family_history = int(metadata['Age'][0]), float(metadata['PSA'][0]), (metadata['FamilyHistory'][0] == 'True')
+        age, psa, family_history = metadata['Age'][0], metadata['PSA'][0], (metadata['FamilyHistory'][0] == 'True')
         primary_grade, secondary_grade, pct_cancer = metadata['PrimaryGrade'][0], metadata['SecondaryGrade'][0], metadata['PctCancer'][0]
     except NotImplementedError:
         metadata = mat73.loadmat(metadata_path)['metadata']
-        age, psa, family_history = int(metadata['Age']), float(metadata['PSA']), (metadata['FamilyHistory'] == 'True')
+        age, psa, family_history = metadata['Age'], metadata['PSA'], (metadata['FamilyHistory'] == 'True')
         primary_grade, secondary_grade, pct_cancer = metadata['PrimaryGrade'], metadata['SecondaryGrade'], metadata['PctCancer']
+
+    if len(age): age = int(age)
+    if len(psa): psa = float(psa)
+    if len(primary_grade): primary_grade = float(primary_grade)
+    if len(secondary_grade): secondary_grade = float(secondary_grade)
+    if len(pct_cancer): pct_cancer = float(pct_cancer)
     
     return age, psa, family_history, primary_grade, secondary_grade, pct_cancer
     

@@ -54,8 +54,8 @@ def convert_iq_rf(q_data: np.ndarray, i_data: np.ndarray, sampling_frequency: in
         t = t[:-1]
 
     for i in range(n_lines):
-        i_data_int[:,i] = np.interp(np.arange(0, i_data.shape[0], 0.5), np.arange(0, i_data.shape[0]), i_data[:,i])
-        q_data_int[:,i] = np.interp(np.arange(0, q_data.shape[0], 0.5), np.arange(0, q_data.shape[0]), q_data[:,i])
+        i_data_int[:,i] = np.interp(np.arange(0, i_data.shape[0], 1/upsample_rate), np.arange(0, i_data.shape[0]), i_data[:,i])
+        q_data_int[:,i] = np.interp(np.arange(0, q_data.shape[0], 1/upsample_rate), np.arange(0, q_data.shape[0]), q_data[:,i])
         rf_data[:,i] = np.real(np.sqrt(i_data_int[:,i]**2 + q_data_int[:,i]**2) * np.sin(2*np.pi*fs_rf*np.transpose(t) + np.arctan2(q_data_int[:,i], i_data_int[:,i])))
     
     return rf_data
@@ -135,7 +135,7 @@ def compute_roi_windows(x_spline: np.ndarray, y_spline: np.ndarray, ax_pix_len_i
     return roi_windows
 
 def compute_power_spec(rf_data: np.ndarray, start_frequency: int, end_frequency: int, 
-                       sampling_frequency: int, n_freq_points=8192) -> Tuple[np.ndarray, np.ndarray]:
+                       sampling_frequency: int, n_freq_points=4096) -> Tuple[np.ndarray, np.ndarray]:
     # Create Hanning Window Function
     unrm_wind = np.hanning(rf_data.shape[0])
     window_func_computations = unrm_wind * np.sqrt(len(unrm_wind) / sum(np.square(unrm_wind)))
@@ -149,7 +149,7 @@ def compute_power_spec(rf_data: np.ndarray, start_frequency: int, end_frequency:
     frequency_chop = frequency_range[f_low:f_high]
 
     fft = np.square(
-        abs(np.fft.fft(np.transpose(np.multiply(rf_data, window_func)), 8192) * rf_data.size)
+        abs(np.fft.fft(np.transpose(np.multiply(rf_data, window_func)), n_freq_points) * rf_data.size)
     )
     full_ps = 20 * np.log10(np.mean(fft, axis=0))
 

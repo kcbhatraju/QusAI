@@ -169,8 +169,8 @@ def get_window_ps(img_info: ImgInfo, img_info_ref: ImgInfo, i_data: np.ndarray, 
         b = analysis_params.depth70.max_vals
     else:
         raise TypeError("Depth not found")
-    if img_info.match_gain != 30:
-        print("WARNING: Not in PZ Preset! Frequencies used in computation may be incorrect")
+    # if img_info.match_gain != 30:
+    #     print("WARNING: Not in PZ Preset! Frequencies used in computation may be incorrect")
 
     scans_table = [None] * img_info.num_focal_zones
     for focal_zone in range(img_info.num_focal_zones):
@@ -272,11 +272,15 @@ def exact_sort(all_files: list, analysis_params: AnalysisParams, phantoms: List[
     # table - (file x focal zone)
     exact_table = []
     for i, file_path in enumerate(all_files):
-        if file_path.name == "phantomInfo.mat" or file_path.parents[1].name == 'Metadata':
+        if file_path.name == "phantomInfo.mat" or file_path.parents[1].name == 'Metadata' or file_path.parent == "Blinded":
             continue
         img_info, img_info_ref, i_data, q_data, i_data_ref, q_data_ref = get_data(file_path, phantoms, frame)
-        exact_table.append(get_window_ps(img_info, img_info_ref, i_data, q_data, i_data_ref, q_data_ref, analysis_params))
-        exact_table[-1] = read_metadata(exact_table[-1])
+
+        if img_info.match_gain == 30 or img_info.match_gain == 40 or img_info.match_gain == 50:
+            exact_table.append(get_window_ps(img_info, img_info_ref, i_data, q_data, i_data_ref, q_data_ref, analysis_params))
+            exact_table[-1] = read_metadata(exact_table[-1])
+        else:
+            print("Not able to remove specified gain setting")
     return exact_table
 
 def gen_scan_table(data_path: Path, frame: int) -> List[List[ParsedScan]]:
