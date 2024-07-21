@@ -1,5 +1,6 @@
 import time
 import math
+from pathlib import Path
 
 import numpy as np
 from tensorflow.keras.losses import binary_crossentropy
@@ -11,12 +12,14 @@ from tensorflow.keras.metrics import AUC
 from tensorflow.keras.layers import ELU
 from sklearn.utils import class_weight
 
+from utils import PlotLosses
+
 def step_decay(epoch):
     initial_lrate = 0.00085 #0.001
     drop = 1 #0.95
     epochs_drop = 5.0
     lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
-    print(lrate)
+    # print(lrate)
     return lrate
 
 def train_model(model, x_train, y_train, x_valid, y_valid, batch_size, epochs, sample_weights, log_dir, retrain_model=False):
@@ -24,12 +27,12 @@ def train_model(model, x_train, y_train, x_valid, y_valid, batch_size, epochs, s
         model.compile(loss=binary_crossentropy,optimizer=Nadam(),metrics=[AUC(name='acc')]) 
     lrate = LearningRateScheduler(step_decay)
     
-    train_run = "Model-{}".format(int(time.time())) 
+    # train_run = "Model-{}".format(int(time.time())) 
     # tensorboard = TensorBoard(log_dir='/home/ahmedelkaffas/logs/{}'.format(train_run))#time()#NAME
-    tensorboard = TensorBoard(log_dir=log_dir.format(train_run))
+    # tensorboard = TensorBoard(log_dir=log_dir / Path(train_run))
     
     y_integers = np.argmax(y_train, axis=1)
-    class_weights = class_weight.compute_class_weight('balanced', np.unique(y_integers), y_integers) #None
+    class_weights = class_weight.compute_class_weight(class_weight="balanced", classes=np.unique(y_integers), y=y_integers) #None
     weights = dict(enumerate(class_weights))
     print('Weights')
     print(weights)
@@ -38,20 +41,20 @@ def train_model(model, x_train, y_train, x_valid, y_valid, batch_size, epochs, s
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=200)
     else:
         es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=100)
-    mc = ModelCheckpoint('best_model.h5', monitor='val_loss', mode='min', verbose=1, save_best_only=True)
+    mc = ModelCheckpoint('best_model.keras', monitor='val_loss', mode='min', verbose=1, save_best_only=True)
         
     history = model.fit(x_train, y_train,
               validation_data=(x_valid,y_valid),
               batch_size=batch_size,
               epochs=epochs,
-              callbacks=[lrate,es,mc],
+              callbacks=[lrate, es, mc, PlotLosses()],
               #callbacks=[callbacks_list],
-              #callbacks=[PlotLosses()],
+            #   callbacks=[PlotLosses()],
               #callbacks=[ta.utils.live()],
               verbose=1, 
-              class_weight = weights, sample_weight = sample_weights) #callbacks=[tensorboard], sample_weight = smpWeights, class_weight = weights, 
+              class_weight = weights) #callbacks=[tensorboard], sample_weight = smpWeights, class_weight = weights, 
     
     if not retrain_model:
-        model = load_model("best_model.h5", custom_objects = {"ELU": ELU}) #TODO
+        model = load_model("best_model.keras", custom_objects = {"ELU": ELU}) #TODO
     
     return model, history

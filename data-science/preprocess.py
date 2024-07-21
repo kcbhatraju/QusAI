@@ -215,7 +215,7 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
     y_train = np.zeros(shape=(len(train_df)),dtype='O')
     for i in range(len(train_df)):
         a = np.squeeze(np.array(train_df[col_name][i]))
-        x_train[i,:,:,:] = a - sub_gain*np.int(train_df['Gain'][i]);
+        x_train[i,:,:,:] = a - sub_gain*int(train_df['Gain'][i]);
         y_train[i] = np.squeeze(np.array(train_df['Label'][i]))
         
     x_train = np.transpose(x_train, (0, 2, 3, 1))
@@ -224,7 +224,7 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
     y_valid = np.zeros(shape=(len(valid_df)),dtype='O')
     for i in range(len(valid_df)):
         e = np.squeeze(np.array(valid_df[col_name][i]))
-        x_valid[i,:,:,:] = e - sub_gain*np.int(valid_df['Gain'][i]);
+        x_valid[i,:,:,:] = e - sub_gain*int(valid_df['Gain'][i]);
         y_valid[i] = np.squeeze(np.array(valid_df['Label'][i]))
 
     x_valid = np.transpose(x_valid, (0, 2, 3, 1))
@@ -233,7 +233,7 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
     y_test = np.zeros(shape=(len(test_df)),dtype='O')
     for i in range(len(test_df)):
         c = np.squeeze(np.array(test_df[col_name][i]))
-        x_test[i,:,:,:] = c - sub_gain*np.int(test_df['Gain'][i])
+        x_test[i,:,:,:] = c - sub_gain*int(test_df['Gain'][i])
         y_test[i] = np.squeeze(np.array(test_df['Label'][i]))
 
     x_test = np.transpose(x_test, (0, 2, 3, 1))
@@ -286,7 +286,7 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
     
     return x_train_4D, y_train_4D, x_valid_4D, y_valid_4D, x_test_4D, y_test_4D, pct_cancer_weights, psa_train, psa_valid, psa_test
 
-def ten_fold_names(df: pd.Dataframe) -> list:
+def ten_fold_names(df: pd.DataFrame) -> list:
 
     if any("Name" in s for s in list(df.columns.values)) == False:
 

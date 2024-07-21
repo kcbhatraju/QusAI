@@ -1,4 +1,8 @@
 __pycache__/
 Outputs/
+**/logs/
+**/models-out/
+*.keras
+*.h5
 
 .DS_Store

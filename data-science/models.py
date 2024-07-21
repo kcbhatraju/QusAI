@@ -1,8 +1,9 @@
 import time
 
 import numpy as np
+import tensorflow as tf
 import tensorflow.keras as tfk
-from tensorflow.keras.layers import Dense, Dropout, Flatten
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Lambda
 from tensorflow.keras.layers import Conv1D, Conv3D, AveragePooling1D, MaxPooling1D, Input, BatchNormalization, AveragePooling3D, MaxPooling3D 
 from tensorflow.keras.layers import LeakyReLU, add, ELU
 from tensorflow.keras.layers import Activation
@@ -13,13 +14,21 @@ from tensorflow.keras.models import Model
 
 from activations import swish, gelu
 
+class SqueezeLayer(tf.keras.layers.Layer):
+    def __init__(self, axis, **kwargs):
+        super(SqueezeLayer, self).__init__(**kwargs)
+        self.axis = axis
+
+    def call(self, inputs):
+        return tf.squeeze(inputs, axis=self.axis)
+
 def sub_model_3d_00a(in_layer, act_func, all_shape):
     out_layer = Conv3D(32, kernel_size=(3, 3, 5), padding='same', strides=(1, 1, 2), kernel_initializer=lecun_normal(), activation=act_func)(in_layer)
     out_layer = Dropout(0.5)(out_layer)
     out_layer = BatchNormalization()(out_layer)
     out_layer = AveragePooling3D(pool_size=(all_shape[1], all_shape[2], 1))(out_layer)
-    out_layer = tfk.backend.squeeze(out_layer, 1)
-    out_layer = tfk.backend.squeeze(out_layer, 1)
+    out_layer = SqueezeLayer(axis=1)(out_layer)
+    out_layer = SqueezeLayer(axis=1)(out_layer)
     out_layer = Conv1D(128, kernel_size=65, padding='same', strides=2, kernel_initializer=lecun_normal(), activation=act_func)(out_layer)
     return out_layer
 
@@ -31,7 +40,7 @@ def model_3d_00(X, Y, psa, workdir):
     
     get_custom_objects().update({'swish': Activation(swish)})
     get_custom_objects().update({'gelu': Activation(gelu)})
-    get_custom_objects().update({'leaky-relu': Activation(LeakyReLU(alpha=0.2))})
+    get_custom_objects().update({'leaky-relu': Activation(LeakyReLU(negative_slope=0.2))})
     act_func = ELU(alpha=0.8)
 
     # Input layers
@@ -68,9 +77,9 @@ def model_3d_00(X, Y, psa, workdir):
     
     # Summarize model
     model = Model(inputs=in_layer, outputs=end_layer)
-    model.summary()
+    # model.summary()
     
     # Plot model architecture
-    plot_model(model, show_shapes=True, to_file=workdir + 'Module3D03' + "-{}".format(int(time.time())) + '.png', expand_nested=True, show_layer_names=True)
+    # plot_model(model, show_shapes=True, to_file=workdir + 'Module3D03' + "-{}".format(int(time.time())) + '.png', expand_nested=True, show_layer_names=True)
     
     return model

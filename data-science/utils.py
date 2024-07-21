@@ -15,7 +15,7 @@ class PlotLosses(Callback):
         
         self.fig = plt.figure()
 
-    def on_epoch_end(self, logs={}):
+    def on_epoch_end(self, epoch, logs={}):
         
         self.logs.append(logs)
         self.x.append(self.i)
@@ -29,6 +29,7 @@ class PlotLosses(Callback):
         plt.subplot(1, 2, 1)
         plt.plot(self.x, self.losses, label="loss")
         plt.plot(self.x, self.val_losses, label="val_loss")
+        plt.legend()
         plt.subplot(1, 2, 2)
         plt.plot(self.x, self.acc, label="acc")
         plt.plot(self.x, self.val_acc, label="val_acc")
