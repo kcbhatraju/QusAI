@@ -246,11 +246,11 @@ def load_metadata(metadata_path: Path) -> Tuple[int, float, bool, str, str, str]
         age, psa, family_history = metadata['Age'], metadata['PSA'], (metadata['FamilyHistory'] == 'True')
         primary_grade, secondary_grade, pct_cancer = metadata['PrimaryGrade'], metadata['SecondaryGrade'], metadata['PctCancer']
 
-    if len(age): age = int(age)
-    if len(psa): psa = float(psa)
-    if len(primary_grade): primary_grade = float(primary_grade)
-    if len(secondary_grade): secondary_grade = float(secondary_grade)
-    if len(pct_cancer): pct_cancer = float(pct_cancer)
+    age = int(age) if len(age) else 0
+    psa = float(psa) if len(psa) else 0
+    primary_grade = float(primary_grade) if len(primary_grade) else 0
+    secondary_grade = float(secondary_grade) if len(secondary_grade) else 0
+    pct_cancer = float(pct_cancer) if len(pct_cancer) else 0
     
     return age, psa, family_history, primary_grade, secondary_grade, pct_cancer
     

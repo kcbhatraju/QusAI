@@ -20,7 +20,6 @@ NEEDLE_AREA_Y_START = 2e-3
 
 SELECTED_FOCAL_SCAN_IDX = 1
 
-
 class ParsedScan():
     def __init__(self, spectral_analyses: List[SpectralAnalysis]):
         self.nps = [analysis.nps for analysis in spectral_analyses]
@@ -34,8 +33,20 @@ class ParsedScan():
         self.ref_path = spectral_analyses[0].ref_path
         self.location = [analysis.location for analysis in spectral_analyses]
 
+class FocalZones():
+    def __init__(self, scans: List[ParsedScan]):
+        self.nps = [analysis.nps for analysis in scans]
+        self.ps = [analysis.ps for analysis in scans]
+        self.ps_ref = [analysis.ps_ref for analysis in scans]
+        self.frequency_axis = [analysis.frequency_axis for analysis in scans]
+        self.midband_fit = [analysis.midband_fit for analysis in scans]
+        self.spectral_slope = [analysis.spectral_slope for analysis in scans]
+        self.spectral_intercept = [analysis.spectral_intercept for analysis in scans]
+        self.img_path = scans[0].img_path
+        self.ref_path = scans[0].ref_path
+        self.location = scans[0].location
+
         self.gain: float = None
-        self.focal_zone: int = None
         self.sampling_frequency: int = None
         self.patient_num: int = None
         self.depth: int = None
@@ -150,7 +161,7 @@ def get_needle_overlay(img: np.ndarray, depths: List[float], ymax: float, overla
     return out
 
 def get_window_ps(img_info: ImgInfo, img_info_ref: ImgInfo, i_data: np.ndarray, q_data: np.ndarray, 
-                  i_data_ref: np.ndarray, q_data_ref: np.ndarray, analysis_params: AnalysisParams) -> List[ParsedScan]:
+                  i_data_ref: np.ndarray, q_data_ref: np.ndarray, analysis_params: AnalysisParams) -> FocalZones:
     
     if img_info.match_gain == 30:
         a = analysis_params.depth30.fit_params
@@ -172,7 +183,7 @@ def get_window_ps(img_info: ImgInfo, img_info_ref: ImgInfo, i_data: np.ndarray, 
     # if img_info.match_gain != 30:
     #     print("WARNING: Not in PZ Preset! Frequencies used in computation may be incorrect")
 
-    scans_table = [None] * img_info.num_focal_zones
+    focal_scans = []
     for focal_zone in range(img_info.num_focal_zones):
         focal_zone_slice = np.arange(focal_zone, q_data.shape[1], img_info.num_focal_zones)
         focal_zone_slice_ref = np.arange(focal_zone, q_data_ref.shape[1], img_info_ref.num_focal_zones)
@@ -247,28 +258,26 @@ def get_window_ps(img_info: ImgInfo, img_info_ref: ImgInfo, i_data: np.ndarray, 
 
             analyzed_windows.append(window_outputs)
         
-        parsed_scan = ParsedScan(analyzed_windows)
-        parsed_scan.gain = img_info.rx_gain
-        parsed_scan.depth = img_info.depth
-        parsed_scan.label = img_info.label
-        parsed_scan.name = img_info.file_path.name.split('_')[0]
-        parsed_scan.patient_num = int(img_info.number)
-        parsed_scan.focal_zone = focal_zone+1
-        parsed_scan.hospital = img_info.id
-        parsed_scan.core = img_info.core
-        parsed_scan.sampling_frequency = img_info.sampling_frequency
+        focal_scans.append(ParsedScan(analyzed_windows))
+    
+    focal_zone_info = FocalZones(focal_scans)
+    focal_zone_info.gain = img_info.rx_gain
+    focal_zone_info.depth = img_info.depth
+    focal_zone_info.label = img_info.label
+    focal_zone_info.name = img_info.file_path.name.split('_')[0]
+    focal_zone_info.patient_num = int(img_info.number)
+    focal_zone_info.hospital = img_info.id
+    focal_zone_info.core = img_info.core
+    focal_zone_info.sampling_frequency = img_info.sampling_frequency
 
-        scans_table[focal_zone] = parsed_scan
+    return focal_zone_info
 
-    return scans_table
+def read_metadata(scan: FocalZones) -> FocalZones:
+    metadata_path = scan.img_path.parents[2] / Path("Metadata") / Path(scan.label) / Path(f"{scan.name}_{scan.core}_{scan.label}.mat")
+    scan.age, scan.psa, scan.family_history, scan.prim_grade, scan.sec_grade, scan.pct_cancer = load_metadata(metadata_path)
+    return scan
 
-def read_metadata(parsed_scans: List[ParsedScan]) -> List[ParsedScan]:
-    for scan in parsed_scans:
-        metadata_path = scan.img_path.parents[2] / Path("Metadata") / Path(scan.label) / Path(f"{scan.name}_{scan.core}_{scan.label}.mat")
-        scan.age, scan.psa, scan.family_history, scan.prim_grade, scan.sec_grade, scan.pct_cancer = load_metadata(metadata_path)
-    return parsed_scans
-
-def exact_sort(all_files: list, analysis_params: AnalysisParams, phantoms: List[PhantomMetaInfo], frame: int) -> List[List[ParsedScan]]:
+def exact_sort(all_files: list, analysis_params: AnalysisParams, phantoms: List[PhantomMetaInfo], frame: int) -> List[FocalZones]:
     # table - (file x focal zone)
     exact_table = []
     for i, file_path in enumerate(all_files):
@@ -283,7 +292,7 @@ def exact_sort(all_files: list, analysis_params: AnalysisParams, phantoms: List[
             print("Not able to remove specified gain setting")
     return exact_table
 
-def gen_scan_table(data_path: Path, frame: int) -> List[List[ParsedScan]]:
+def gen_scan_table(data_path: Path, frame: int) -> List[FocalZones]:
     phantom_dir = data_path / Path("Phantom")
     try:
         phantom_meta_info_matlab = loadmat(phantom_dir / Path("phantomInfo.mat"))
@@ -301,6 +310,7 @@ def gen_scan_table(data_path: Path, frame: int) -> List[List[ParsedScan]]:
     analysis_params.lateral_overlap = 0.5
     analysis_params.min_frequency = 1000000 # best at 12 MHz (65% bandwidth for exact imaging)
     analysis_params.max_frequency = 70000000 # best at 29 MHz 
+    # keeping large bandwidth since we use low_band_freq and up_band_freq later which are set on a per-scan basis
 
     phantom_depths = sorted(list(set(phantom.depth for phantom in phantoms)))
     phantom_gains = sorted(list(set(phantom.gain for phantom in phantoms)))

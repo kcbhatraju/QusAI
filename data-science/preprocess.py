@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -138,11 +140,11 @@ def train_test_split_by_name(df, test_ratio):
     
     for name in train_names:
         train_set_patient = df[df['Name'] == name]
-        train_set_df = train_set_df.append(train_set_patient)
+        train_set_df = pd.concat([train_set_df, train_set_patient], ignore_index=True)
     
     for name in test_names:
         test_set_patient = df[df['Name'] == name]
-        test_set_df = test_set_df.append(test_set_patient)
+        test_set_df = pd.concat([test_set_df, test_set_patient], ignore_index=True)
     
     return train_set_df, test_set_df
 
@@ -208,10 +210,18 @@ def encode_labels(y: np.ndarray) -> np.ndarray:
     encoded_labels = np.array(labels)
     return encoded_labels
 
-def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFrame, col_name: str, sub_gain: float, dims=3):
+def factor_int(n):
+    val = math.ceil(math.sqrt(n))
+    val2 = int(n/val)
+    while val2 * val != float(n):
+        val -= 1
+        val2 = int(n/val)
+    return val, val2
+
+def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFrame, col_name: str, sub_gain: float):
     mat_size = np.squeeze(np.array(train_df[col_name][1])).shape
     
-    x_train = np.zeros(shape=(len(train_df),dims,mat_size[1],mat_size[2]))
+    x_train = np.zeros(shape=(len(train_df),mat_size[0],mat_size[1],mat_size[2]))
     y_train = np.zeros(shape=(len(train_df)),dtype='O')
     for i in range(len(train_df)):
         a = np.squeeze(np.array(train_df[col_name][i]))
@@ -220,7 +230,7 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
         
     x_train = np.transpose(x_train, (0, 2, 3, 1))
 
-    x_valid = np.zeros(shape=(len(valid_df),dims,mat_size[1],mat_size[2]))
+    x_valid = np.zeros(shape=(len(valid_df),mat_size[0],mat_size[1],mat_size[2]))
     y_valid = np.zeros(shape=(len(valid_df)),dtype='O')
     for i in range(len(valid_df)):
         e = np.squeeze(np.array(valid_df[col_name][i]))
@@ -229,7 +239,7 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
 
     x_valid = np.transpose(x_valid, (0, 2, 3, 1))
 
-    x_test = np.zeros(shape=(len(test_df),dims,mat_size[1],mat_size[2]))
+    x_test = np.zeros(shape=(len(test_df),mat_size[0],mat_size[1],mat_size[2]))
     y_test = np.zeros(shape=(len(test_df)),dtype='O')
     for i in range(len(test_df)):
         c = np.squeeze(np.array(test_df[col_name][i]))
@@ -246,15 +256,19 @@ def create_4D(train_df: pd.DataFrame, valid_df: pd.DataFrame, test_df: pd.DataFr
     y_train = to_categorical(y_train_b)
     y_valid = to_categorical(y_valid_b)
     y_test = to_categorical(y_test_b)
+
+    train_n1, train_n2 = factor_int(x_train.shape[1])
+    valid_n1, valid_n2 = factor_int(x_valid.shape[1])
+    test_n1, test_n2 = factor_int(x_test.shape[1])
     
     # Reshape for use as 3D + chnl
-    x_train_4D = x_train.reshape(x_train.shape[0],int(np.sqrt(x_train.shape[1])),int(np.sqrt(x_train.shape[1])),x_train.shape[2],x_train.shape[3])
+    x_train_4D = x_train.reshape(x_train.shape[0],train_n1,train_n2,x_train.shape[2],x_train.shape[3])
     y_train_4D = y_train
     
-    x_valid_4D = x_valid.reshape(x_valid.shape[0],int(np.sqrt(x_valid.shape[1])),int(np.sqrt(x_valid.shape[1])),x_valid.shape[2],x_valid.shape[3])
+    x_valid_4D = x_valid.reshape(x_valid.shape[0],valid_n1, valid_n2, x_valid.shape[2],x_valid.shape[3])
     y_valid_4D = y_valid
 
-    x_test_4D = x_test.reshape(x_test.shape[0],int(np.sqrt(x_test.shape[1])),int(np.sqrt(x_test.shape[1])),x_test.shape[2],x_test.shape[3])
+    x_test_4D = x_test.reshape(x_test.shape[0], test_n1, test_n2,x_test.shape[2],x_test.shape[3])
     y_test_4D = y_test
     
     weight_type = 'PctCancer'
