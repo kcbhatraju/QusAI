@@ -20,11 +20,12 @@ def step_decay(epoch):
     epochs_drop = 5.0
     lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
     # print(lrate)
-    return lrate
+    # return lrate
+    return 0.000001
 
 def train_model(model, x_train, y_train, x_valid, y_valid, batch_size, epochs, sample_weights, log_dir, retrain_model=False):
     if not retrain_model:
-        model.compile(loss=binary_crossentropy,optimizer=Nadam(),metrics=[AUC(name='acc')]) 
+        model.compile(loss=binary_crossentropy,optimizer=Nadam(),metrics=[AUC(name='auc')]) 
     lrate = LearningRateScheduler(step_decay)
     
     # train_run = "Model-{}".format(int(time.time())) 

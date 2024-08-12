@@ -21,8 +21,8 @@ class PlotLosses(Callback):
         self.x.append(self.i)
         self.losses.append(logs.get('loss'))
         self.val_losses.append(logs.get('val_loss'))
-        self.acc.append(logs.get('acc'))
-        self.val_acc.append(logs.get('val_acc'))
+        self.acc.append(logs.get('auc'))
+        self.val_acc.append(logs.get('val_auc'))
         self.i += 1
         
         clear_output(wait=True)
@@ -31,8 +31,8 @@ class PlotLosses(Callback):
         plt.plot(self.x, self.val_losses, label="val_loss")
         plt.legend()
         plt.subplot(1, 2, 2)
-        plt.plot(self.x, self.acc, label="acc")
-        plt.plot(self.x, self.val_acc, label="val_acc")
+        plt.plot(self.x, self.acc, label="auc")
+        plt.plot(self.x, self.val_acc, label="val_auc")
         plt.legend()
         plt.show()
 

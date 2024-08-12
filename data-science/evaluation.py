@@ -39,7 +39,7 @@ def evaluate_ss_thresholds(model, x_test, y_test):
     plt.plot(specificity_scores,thresholds)
     plt.show
 
-def evaluateModel(model, x_test, y_test, ax1, ax2, thresh=0.49):
+def evaluate_model(model, x_test, y_test, ax1, ax2, thresh=0.49):
     print('###########################')
     print('###########################')
     score = model.evaluate(x_test, y_test, verbose=0)

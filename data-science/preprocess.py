@@ -116,11 +116,11 @@ def patient_stratify(df, test_ratio, shuffle_indexes):
     
     for name in train_names:
         train_set_patient = df[df['Name'] == name]
-        train_set_df = train_set_df.append(train_set_patient)
+        train_set_df = pd.concat([train_set_df, train_set_patient])
     
     for name in test_names:
         test_set_patient = df[df['Name'] == name]
-        test_set_df = test_set_df.append(test_set_patient)
+        test_set_df = pd.concat([test_set_df, test_set_patient])
     
     return train_set_df, test_set_df, shuffle_indexes
 
