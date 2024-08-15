@@ -1,15 +1,13 @@
-import time
 import math
 from pathlib import Path
 
 import numpy as np
-from tensorflow.keras.losses import binary_crossentropy
-from tensorflow.keras.optimizers import Nadam
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
-from tensorflow.keras.models import load_model
-from tensorflow.keras.metrics import AUC
-from tensorflow.keras.layers import ELU
+from keras.optimizers import Nadam
+from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
+from keras.metrics import AUC
+from keras.layers import ELU
+from keras.models import load_model
+from keras.losses import binary_crossentropy
 from sklearn.utils import class_weight
 
 from utils import PlotLosses

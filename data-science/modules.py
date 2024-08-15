@@ -1,9 +1,6 @@
-import tensorflow.keras as tfk
-from tensorflow.keras.layers import Conv1D, Conv3D, AveragePooling1D, MaxPooling1D, add, AveragePooling3D, MaxPooling3D 
-from tensorflow.keras.layers import add
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.initializers import lecun_normal
-from tensorflow.keras.regularizers import l2
+from keras.layers import Activation, AveragePooling3D, Conv3D, MaxPooling3D, add, concatenate
+from keras.initializers import lecun_normal
+from keras.regularizers import l2
 
 # function for creating an identity or projection residual module
 def residual_module_3d_01(layer_in, n_filters, kernel_siz, activation_func, strd):
@@ -46,7 +43,7 @@ def inception_module_3d_org(layer_in, act_func, n_filters, n_strides):
     tower_3 = AveragePooling3D((1, 1, 2), padding='same')(merge_input)
     tower_3 = Conv3D(n_filters, (1, 1, 1), padding='same', activation=act_func)(tower_3)
 
-    layer_out = tfk.layers.concatenate([tower_0, tower_1, tower_2, tower_3], axis=4)
+    layer_out = concatenate([tower_0, tower_1, tower_2, tower_3], axis=4)
     
     return layer_out
 
@@ -56,7 +53,7 @@ def inception_module_3d_00(layer_in, n_kernel, n_strides):
     tower_3 = MaxPooling3D(n_kernel, padding='same', strides=n_strides)(merge_input)
     tower_4 = AveragePooling3D(n_kernel, padding='same', strides=n_strides)(merge_input)
 
-    layer_out = tfk.layers.concatenate([tower_4, tower_3], axis=4)
+    layer_out = concatenate([tower_4, tower_3], axis=4)
     
     return layer_out
 
@@ -69,7 +66,7 @@ def inception_module_3d_00a(layer_in, n_kernel, n_strides):
     tower_4 = AveragePooling3D(pool_size=(3, 3, 5), padding='same', strides=n_strides)(merge_input)
     tower_5 = AveragePooling3D(pool_size=(5, 5, 7), padding='same', strides=n_strides)(merge_input)
     
-    layer_out = tfk.layers.concatenate([tower_1, tower_2], axis=4)
+    layer_out = concatenate([tower_1, tower_2], axis=4)
     
     return layer_out
 
@@ -91,7 +88,7 @@ def inception_module_3d_01(layer_in, n_filters, act_func):
     tower_7 = MaxPooling3D((1, 1, 4), padding='same')(merge_input)
     tower_7 = Conv3D(n_filters, (9, 9, 9), padding='same', activation=act_func, kernel_initializer=lecun_normal(seed=10))(tower_7)
 
-    layer_out = tfk.layers.concatenate([tower_2, tower_1, tower_3], axis=4)
+    layer_out = concatenate([tower_2, tower_1, tower_3], axis=4)
     
     return layer_out
 
@@ -110,7 +107,7 @@ def inception_module_3d_02(layer_in, n_filters, act_func):
     tower_7 = MaxPooling3D((1, 1, 4), padding='same')(merge_input)
     tower_7 = Conv3D(n_filters, (7, 7, 7), padding='same', activation=act_func, kernel_initializer='lecun_normal')(tower_7)
 
-    layer_out = tfk.layers.concatenate([tower_0, tower_1, tower_2, tower_4], axis=4)
+    layer_out = concatenate([tower_0, tower_1, tower_2, tower_4], axis=4)
     
     return layer_out
 
@@ -129,6 +126,6 @@ def inception_module_3d_02b(layer_in, n_filters, act_func):
     tower_7 = MaxPooling3D((1, 1, 4), padding='same')(merge_input)
     tower_7 = Conv3D(n_filters, (7, 7, 7), padding='same', activation=act_func, kernel_initializer='lecun_normal')(tower_7)
 
-    layer_out = tfk.layers.concatenate([tower_0, tower_1, tower_2, tower_4], axis=4)
+    layer_out = concatenate([tower_0, tower_1, tower_2, tower_4], axis=4)
     
     return layer_out

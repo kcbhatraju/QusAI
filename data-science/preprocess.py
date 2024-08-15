@@ -3,7 +3,7 @@ import math
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from tensorflow.keras.utils import to_categorical
+from keras.utils import to_categorical
 from skimage.measure.entropy import shannon_entropy as sentropy
 from tqdm import tqdm_notebook
 

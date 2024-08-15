@@ -1,16 +1,10 @@
-import time
-
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras as tfk
-from tensorflow.keras.layers import Dense, Dropout, Flatten, Lambda
-from tensorflow.keras.layers import Conv1D, Conv3D, AveragePooling1D, MaxPooling1D, Input, BatchNormalization, AveragePooling3D, MaxPooling3D 
-from tensorflow.keras.layers import LeakyReLU, add, ELU
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.initializers import lecun_normal
-from tensorflow.keras.utils import get_custom_objects
-from tensorflow.keras.utils import plot_model
-from tensorflow.keras.models import Model
+from keras.layers import Dense, Dropout, Flatten, Conv1D, Conv3D, BatchNormalization, AveragePooling3D, LeakyReLU, ELU, Activation, \
+    Input, average, concatenate
+from keras.models import Model
+from keras.utils import get_custom_objects
+from keras.initializers import lecun_normal
 
 from activations import swish, gelu
 
@@ -40,7 +34,8 @@ def model_3d_00(X, Y, psa, workdir):
     
     get_custom_objects().update({'swish': Activation(swish)})
     get_custom_objects().update({'gelu': Activation(gelu)})
-    get_custom_objects().update({'leaky-relu': Activation(LeakyReLU(negative_slope=0.2))})
+    get_custom_objects().update({'leaky-relu': Activation(LeakyReLU())})
+    # get_custom_objects().update({'leaky-relu': Activation(LeakyReLU(negative_slope=0.2))})
     act_func = ELU(alpha=0.8)
 
     # Input layers
@@ -63,14 +58,14 @@ def model_3d_00(X, Y, psa, workdir):
     out_layer = [out_layer1, out_layer2, out_layer3, out_layer4, out_layer5, out_layer6]
     
     # End layers
-    end_layer = tfk.layers.average(out_layer)
+    end_layer = average(out_layer)
     end_layer = Conv1D(384, kernel_size=33, padding='same', strides=1, kernel_initializer=lecun_normal(), activation=act_func)(end_layer)
     end_layer = Dropout(0.5)(end_layer)
     end_layer = Flatten()(end_layer)
     
     # Add PSA
     in_layer7 = Dense(32, activation=act_func)(in_layer7)
-    end_layer = tfk.layers.concatenate([end_layer, in_layer7])
+    end_layer = concatenate([end_layer, in_layer7])
     
     # Finish
     end_layer = Dense(num_classes, activation='sigmoid')(end_layer)

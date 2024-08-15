@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from tensorflow.keras import backend as K
-from tensorflow.nn import top_k
+import tensorflow as tf
+from keras import backend as K
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, recall_score, \
     roc_auc_score, balanced_accuracy_score, roc_curve, f1_score, precision_recall_curve, average_precision_score
 
@@ -86,7 +86,7 @@ def auc_metric(true, pred):
     total_count = K.shape(true)[0]
 
     #sorting the prediction values in descending order
-    _, indices = top_k(pred, k = total_count)   
+    _, indices = tf.nn.top_k(pred, k = total_count)   
     #sorting the ground truth values based on the predictions above         
     sortedTrue = K.gather(true, indices)
 

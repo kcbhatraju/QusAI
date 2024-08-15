@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from tensorflow.keras.callbacks import Callback
+from keras.callbacks import Callback
 from IPython.display import clear_output
 from sklearn.metrics import roc_auc_score
 
