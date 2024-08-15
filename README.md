@@ -5,3 +5,9 @@ This repository contains updated scan preprocessing and deep learning pipelines 
 ## Getting started
 
 To be able to save outputs from `demo.ipynb`, make an `Outputs` directory in this repository before getting started.
+
+## Environment Setup
+
+Run notebooks in the `multi_instance` conda environment produced with this command:
+
+`conda env create -f environment.yml`
