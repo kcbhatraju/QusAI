@@ -10,18 +10,19 @@ def evaluate_acc_thresholds(model, x_test, y_test):
     print(model, '\n')
     y_pred_prob = model.predict(x_test)
     accuracy_scores = []
-    thresholds = np.arange(0.01,0.99,0.01)
+    thresholds = np.arange(0.01, 0.99, 0.01)
     for thresh in thresholds:
-        accuracy_scores.append(accuracy_score(y_test[:,0],[1 if m > thresh else 0 for m in y_pred_prob[:,0]]))
+        accuracy_scores.append(accuracy_score(y_test[:, 0], [1 if m > thresh else 0 for m in y_pred_prob[:, 0]]))
 
     accuracies = np.array(accuracy_scores)
-    max_accuracy_threshold =  thresholds[accuracies.argmax()]
-    print('best thresh:',max_accuracy_threshold)
+    max_accuracy_threshold = thresholds[accuracies.argmax()]
+    print('best thresh:', max_accuracy_threshold)
 
     y_pred_x = (model.predict(x_test)[:, 0] > max_accuracy_threshold).astype('float')
     print(confusion_matrix(y_test[:, 0], y_pred_x))
     print(classification_report(y_test[:, 0], y_pred_x))
     print("#############################")
+
 
 def evaluate_ss_thresholds(model, x_test, y_test):
     print(model, '\n')
@@ -29,15 +30,16 @@ def evaluate_ss_thresholds(model, x_test, y_test):
 
     sensitivity_scores = []
     specificity_scores = []
-    thresholds = np.arange(0.2,0.8,0.01)
+    thresholds = np.arange(0.2, 0.8, 0.01)
     for thresh in thresholds:
-        sensitivity_scores.append(recall_score(y_test[:,0],[1 if m >= thresh else 0 for m in y_pred_prob[:,0]]))
-        specificity_scores.append(recall_score(y_test[:,0],[1 if m < thresh else 0 for m in y_pred_prob[:,0]]))
-    
+        sensitivity_scores.append(recall_score(y_test[:, 0], [1 if m >= thresh else 0 for m in y_pred_prob[:, 0]]))
+        specificity_scores.append(recall_score(y_test[:, 0], [1 if m < thresh else 0 for m in y_pred_prob[:, 0]]))
+
     plt.figure()
-    plt.plot(sensitivity_scores,thresholds)
-    plt.plot(specificity_scores,thresholds)
+    plt.plot(sensitivity_scores, thresholds)
+    plt.plot(specificity_scores, thresholds)
     plt.show
+
 
 def evaluate_model(model, x_test, y_test, ax1, ax2, thresh=0.49):
     print('###########################')
@@ -47,53 +49,54 @@ def evaluate_model(model, x_test, y_test, ax1, ax2, thresh=0.49):
     print('Accuracy:', score[1])
 
     y_pred_prob = model.predict(x_test)
-    y_pred = (y_pred_prob[:,0]>thresh)
-    print('thresh:',thresh)
-    print(confusion_matrix(y_test[:,0], y_pred))
-    print(classification_report(y_test[:,0], y_pred))
-    print('Balanced ACC:', balanced_accuracy_score(y_test[:,0], y_pred))
-    print('AUC:',roc_auc_score(y_test[:,0], y_pred_prob[:,0]))
-    print('pAUC:',roc_auc_score(y_test[:,0], y_pred_prob[:,0], max_fpr = 0.50))
-    print('microAUC:',roc_auc_score(y_test[:,0], y_pred_prob[:,0], average = 'micro'))
-    print('macroAUC:',roc_auc_score(y_test[:,0], y_pred_prob[:,0], average = 'macro'))
-    print('wAUC:',roc_auc_score(y_test[:,0], y_pred_prob[:,0], average = 'weighted'))
-    print('sAUC:',roc_auc_score(y_test[:,0], y_pred_prob[:,0], average = 'samples'))
+    y_pred = (y_pred_prob[:, 0] > thresh)
+    print('thresh:', thresh)
+    print(confusion_matrix(y_test[:, 0], y_pred))
+    print(classification_report(y_test[:, 0], y_pred))
+    print('Balanced ACC:', balanced_accuracy_score(y_test[:, 0], y_pred))
+    print('AUC:', roc_auc_score(y_test[:, 0], y_pred_prob[:, 0]))
+    print('pAUC:', roc_auc_score(y_test[:, 0], y_pred_prob[:, 0], max_fpr=0.50))
+    print('microAUC:', roc_auc_score(y_test[:, 0], y_pred_prob[:, 0], average='micro'))
+    print('macroAUC:', roc_auc_score(y_test[:, 0], y_pred_prob[:, 0], average='macro'))
+    print('wAUC:', roc_auc_score(y_test[:, 0], y_pred_prob[:, 0], average='weighted'))
+    print('sAUC:', roc_auc_score(y_test[:, 0], y_pred_prob[:, 0], average='samples'))
     
     evaluate_acc_thresholds(model, x_test, y_test)
     evaluate_ss_thresholds(model, x_test, y_test)
     
-    fpr, tpr, _ = roc_curve(y_test[:,0], y_pred_prob[:,0])
+    fpr, tpr, _ = roc_curve(y_test[:, 0], y_pred_prob[:, 0])
     ax1.plot(fpr, tpr)
     ax1.set_title('Receiver Operator Curve')
     
-    precision, recall, _ = precision_recall_curve(y_test[:,0], y_pred_prob[:,0])
+    precision, recall, _ = precision_recall_curve(y_test[:, 0], y_pred_prob[:, 0])
     ax2.plot(recall, precision)
     ax2.set_title('Precision-Recall Curve')
 
-    roc_auc = roc_auc_score(y_test[:,0], y_pred_prob[:,0])
-    f101 = f1_score(y_test[:,0],(y_pred_prob[:,0]>thresh), average='binary')
-    f102 = f1_score(y_test[:,1],(y_pred_prob[:,0]<thresh), average='binary')
-    conf_mat = confusion_matrix(y_test[:,0], y_pred)
+    roc_auc = roc_auc_score(y_test[:, 0], y_pred_prob[:, 0])
+    f101 = f1_score(y_test[:, 0], (y_pred_prob[:, 0] > thresh), average='binary')
+    f102 = f1_score(y_test[:, 1], (y_pred_prob[:, 0] < thresh), average='binary')
+    conf_mat = confusion_matrix(y_test[:, 0], y_pred)
     
     return roc_auc, f101, f102, conf_mat
 
+
 def auc_metric(true, pred):
-    #We want strictly 1D arrays - cannot have (batch, 1), for instance
+    # We want strictly 1D arrays - cannot have (batch, 1), for instance
     true = K.flatten(true)
     pred = K.flatten(pred)
 
-    #total number of elements in this batch
+    # total number of elements in this batch
     total_count = K.shape(true)[0]
 
-    #sorting the prediction values in descending order
-    _, indices = tf.nn.top_k(pred, k = total_count)   
-    #sorting the ground truth values based on the predictions above         
+    # sorting the prediction values in descending order
+    _, indices = tf.nn.top_k(pred, k=total_count)   
+    # sorting the ground truth values based on the predictions above         
     sortedTrue = K.gather(true, indices)
 
-    #getting the ground negative elements (already sorted above)
+    # getting the ground negative elements (already sorted above)
     negatives = 1 - sortedTrue
 
-    #the true positive count per threshold
+    # the true positive count per threshold
     tp_curve = K.cumsum(sortedTrue)
 
     #area under the curve

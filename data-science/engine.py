@@ -1,6 +1,7 @@
 import math
 from pathlib import Path
 
+import keras
 import numpy as np
 from keras.optimizers import Nadam
 from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
@@ -11,6 +12,7 @@ from keras.losses import binary_crossentropy
 from sklearn.utils import class_weight
 
 from utils import PlotLosses
+from models import SqueezeLayer
 
 def step_decay(epoch):
     initial_lrate = 0.00085 #0.001
@@ -46,7 +48,7 @@ def train_model(model, x_train, y_train, x_valid, y_valid, batch_size, epochs, s
               validation_data=(x_valid,y_valid),
               batch_size=batch_size,
               epochs=epochs,
-              callbacks=[lrate, es, mc, PlotLosses()],
+              callbacks=[lrate, mc, PlotLosses()],
               #callbacks=[callbacks_list],
             #   callbacks=[PlotLosses()],
               #callbacks=[ta.utils.live()],
@@ -54,6 +56,5 @@ def train_model(model, x_train, y_train, x_valid, y_valid, batch_size, epochs, s
               class_weight = weights) #callbacks=[tensorboard], sample_weight = smpWeights, class_weight = weights, 
     
     if not retrain_model:
-        model = load_model("best_model.keras", custom_objects = {"ELU": ELU}) #TODO
-    
+        model = load_model("best_model.keras", custom_objects = {'SqueezeLayer': SqueezeLayer })
     return model, history

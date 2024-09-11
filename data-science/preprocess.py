@@ -98,31 +98,31 @@ def create_patient_label(df):
     df['CancerLabel'] = all_labels
     return df
 
-def patient_stratify(df, test_ratio, shuffle_indexes):
-    if not any("Name" in s for s in list(df.columns.values)):
-        df = create_patient_id(df)
+def patient_stratify(df, test_ratio):
+    return train_test_split_by_name(df, test_ratio)
+    # if not any("Name" in s for s in list(df.columns.values)):
+    #     df = create_patient_id(df)
     
-    all_names = list(dict.fromkeys(df['Name'].tolist()))
+    # all_names = list(dict.fromkeys(df['Name'].tolist()))
     
-    if np.max(shuffle_indexes) == 0:
-        shuffle_indexes = np.random.permutation(len(all_names))
+    # shuffle_indexes = np.random.permutation(len(all_names))
         
-    test_size = int(len(all_names) * test_ratio)
+    # test_size = int(len(all_names) * test_ratio)
     
-    test_names = [all_names[i] for i in shuffle_indexes[:test_size]]
-    train_names = [all_names[i] for i in shuffle_indexes[test_size:]]
+    # test_names = [all_names[i] for i in shuffle_indexes[:test_size]]
+    # train_names = [all_names[i] for i in shuffle_indexes[test_size:]]
     
-    train_set_df, test_set_df = pd.DataFrame(), pd.DataFrame()
+    # train_set_df, test_set_df = pd.DataFrame(), pd.DataFrame()
     
-    for name in train_names:
-        train_set_patient = df[df['Name'] == name]
-        train_set_df = pd.concat([train_set_df, train_set_patient])
+    # for name in train_names:
+    #     train_set_patient = df[df['Name'] == name]
+    #     train_set_df = pd.concat([train_set_df, train_set_patient])
     
-    for name in test_names:
-        test_set_patient = df[df['Name'] == name]
-        test_set_df = pd.concat([test_set_df, test_set_patient])
+    # for name in test_names:
+    #     test_set_patient = df[df['Name'] == name]
+    #     test_set_df = pd.concat([test_set_df, test_set_patient])
     
-    return train_set_df, test_set_df, shuffle_indexes
+    # return train_set_df, test_set_df
 
 
 def train_test_split_by_name(df, test_ratio):

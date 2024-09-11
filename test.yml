@@ -1,0 +1,15 @@
+name: tensorflow-gpu-env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10  # or any version you prefer
+  - numpy
+  - pandas
+  - matplotlib
+  - scipy
+  - pip
+  - tensorflow-gpu
+  - pip:
+    - tensorflow-addons
+    - tensorflow-datasets
