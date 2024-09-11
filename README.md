@@ -10,4 +10,6 @@ To be able to save outputs from `data-aggregation/demo.ipynb`, make an `Outputs`
 
 Run notebooks in the `multi_instance` conda environment produced with this command:
 
-`conda env create -f environment.yml`
+`conda env create -f env.yml`
+
+TODO: add further instructionsf or getting env to work in notebooks
