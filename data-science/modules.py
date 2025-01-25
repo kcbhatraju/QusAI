@@ -1,6 +1,6 @@
-from keras.layers import Activation, AveragePooling3D, Conv3D, MaxPooling3D, add, concatenate
-from keras.initializers import lecun_normal
-from keras.regularizers import l2
+from keras.api.layers import Activation, AveragePooling3D, Conv3D, MaxPooling3D, add, concatenate
+from keras.api.initializers import lecun_normal
+from keras.api.regularizers import l2
 
 # function for creating an identity or projection residual module
 def residual_module_3d_01(layer_in, n_filters, kernel_siz, activation_func, strd):

@@ -5,5 +5,5 @@ Outputs/
 **/models-out/
 *.keras
 *.h5
-
 .DS_Store
+ExactData/

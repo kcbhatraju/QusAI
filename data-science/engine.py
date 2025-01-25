@@ -3,12 +3,12 @@ from pathlib import Path
 
 import keras
 import numpy as np
-from keras.optimizers import Nadam
-from keras.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
-from keras.metrics import AUC
-from keras.layers import ELU
-from keras.models import load_model
-from keras.losses import binary_crossentropy
+from keras.api.optimizers import Nadam
+from keras.api.callbacks import LearningRateScheduler, EarlyStopping, ModelCheckpoint
+from keras.api.metrics import AUC
+from keras.api.layers import ELU
+from keras.api.models import load_model
+from keras.api.losses import binary_crossentropy
 from sklearn.utils import class_weight
 
 from utils import PlotLosses

@@ -1,10 +1,10 @@
 import numpy as np
 import tensorflow as tf
-from keras.layers import Dense, Dropout, Flatten, Conv1D, Conv3D, BatchNormalization, AveragePooling3D, LeakyReLU, ELU, Activation, \
+from keras.api.layers import Dense, Dropout, Flatten, Conv1D, Conv3D, BatchNormalization, AveragePooling3D, LeakyReLU, ELU, Activation, \
     Input, average, concatenate
-from keras.models import Model
-from keras.utils import get_custom_objects
-from keras.initializers import lecun_normal
+from keras.api.models import Model
+from keras.api.utils import get_custom_objects
+from keras.api.initializers import lecun_normal
 
 from activations import swish, gelu
 
