@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from keras.api.backend import sigmoid
+from keras.api.activations import sigmoid
 
 def swish(x, beta = .1):
     return (x * sigmoid(beta * x))
